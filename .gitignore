@@ -61,3 +61,13 @@ Thumbs.db
 *.temp
 .temp
 
+# Documentation (exclude working docs, keep README.md)
+DOCS_INDEX.md
+START_HERE.md
+PROJECT_COMPLETE.md
+PROJECT_OVERVIEW.md
+CHANGELOG.md
+DEPLOYMENT.md
+CUSTOMIZATION.md
+QUICK_START.md
+SETUP.md
