@@ -1,0 +1,27 @@
+[
+  {
+    "id": 1,
+    "title": "DeepFocus",
+    "description": "Personal productivity & focus tracker built with Rust + Tauri.",
+    "url": "https://github.com/sksudharsanan/deepfocus",
+    "techStack": ["Rust", "Tauri", "Productivity"],
+    "color": "blue"
+  },
+  {
+    "id": 2,
+    "title": "ScriptWriter",
+    "description": "AI screenplay tool for writers with built-in scene management and storyboards.",
+    "url": "https://github.com/SKSudharsanan/scriptwriter",
+    "techStack": ["AI", "Screenplay", "Scene Management", "Storyboards"],
+    "color": "purple"
+  },
+  {
+    "id": 3,
+    "title": "The Pit",
+    "description": "Debate platform where AI and humans clash on topics scored by emotion and reasoning.",
+    "url": "https://the-pit.xyz",
+    "techStack": ["AI", "Debate", "Emotion Analysis", "Reasoning"],
+    "color": "pink"
+  }
+]
+

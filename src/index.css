@@ -1,0 +1,179 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light Mode */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 95%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 95%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 354 48% 57%;
+    --primary-foreground: 0 0% 95%;
+    --secondary: 218 11% 59%;
+    --secondary-foreground: 0 0% 95%;
+    --muted: 218 11% 59%;
+    --muted-foreground: 0 0% 75%;
+    --accent: 218 11% 59%;
+    --accent-foreground: 0 0% 95%;
+    --destructive: 354 48% 57%;
+    --destructive-foreground: 0 0% 95%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 354 48% 57%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    /* Dark Mode - Lighter text for visibility */
+    --background: 0 0% 0%;
+    --foreground: 0 0% 95%;           /* Very light text */
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 95%;      /* Very light text */
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 354 48% 57%;           /* #C14953 - CTA buttons */
+    --primary-foreground: 0 0% 100%;  /* White text */
+    --secondary: 218 11% 59%;         /* #848FA5 - Accent blue */
+    --secondary-foreground: 0 0% 95%;
+    --muted: 218 11% 59%;
+    --muted-foreground: 0 0% 75%;     /* Medium light gray */
+    --accent: 218 11% 59%;
+    --accent-foreground: 0 0% 95%;
+    --destructive: 354 48% 57%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 30%;
+    --input: 0 0% 30%;
+    --ring: 354 48% 57%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-background;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-muted rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted-foreground;
+}
+
+/* Glassmorphism effect - Darker with black tinge */
+.glass {
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* Text shadows for visibility over video */
+h1, h2, h3 {
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Hide scrollbar for horizontal scroll container */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+
+
+/* Gradient text - Custom cinematic */
+.gradient-text {
+  background: linear-gradient(
+    135deg,
+    #C14953 0%,
+    #848FA5 25%,
+    #C2847A 50%,
+    #848FA5 75%,
+    #C14953 100%
+  );
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradient-shift 8s ease infinite;
+}
+
+.light .gradient-text {
+  background: linear-gradient(
+    135deg,
+    #C2847A 0%,
+    #848586 25%,
+    #280003 50%,
+    #848586 75%,
+    #C2847A 100%
+  );
+  background-size: 200% 200%;
+}
+
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Cinematic glow effects */
+.glow-highlight {
+  box-shadow: 0 0 30px rgba(193, 73, 83, 0.6);
+}
+
+.glow-accent {
+  box-shadow: 0 0 30px rgba(132, 143, 165, 0.6);
+}
+
+.glow-light {
+  box-shadow: 0 0 30px rgba(194, 132, 122, 0.5);
+}
+
+/* Horizontal scroll container */
+.horizontal-scroll {
+  scroll-snap-type: x mandatory;
+  overflow-x: scroll;
+  overflow-y: hidden;
+  display: flex;
+  height: 100vh;
+}
+
+.horizontal-scroll section {
+  scroll-snap-align: start;
+  flex-shrink: 0;
+  width: 100vw;
+  height: 100vh;
+}
+

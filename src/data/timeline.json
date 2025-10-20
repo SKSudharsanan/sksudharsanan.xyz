@@ -1,0 +1,51 @@
+[
+  {
+    "id": 1,
+    "years": "2018–2021",
+    "company": "HTC Global Services",
+    "role": "R&D Engineer",
+    "summary": "Worked in Hyperledger Fabric, Ethereum, R3 Corda. Built chatbots and ML pipelines for face recognition and MLOps workflows.",
+    "techStack": ["Hyperledger Fabric", "Ethereum", "R3 Corda", "Machine Learning", "MLOps", "Face Recognition"]
+  },
+  {
+    "id": 2,
+    "years": "2021–2023",
+    "company": "Guardian Link",
+    "role": "Blockchain R&D",
+    "summary": "Researched L2s (OP Stack, StarkEx, Starknet, Besu, Cosmos). Built custodial & non-custodial wallets and Web3 domain systems.",
+    "techStack": ["OP Stack", "StarkEx", "Starknet", "Besu", "Cosmos", "Web3", "Wallets"]
+  },
+  {
+    "id": 3,
+    "years": "2023–2024",
+    "company": "Astra",
+    "role": "SDE (Rust)",
+    "summary": "Founding engineer for high-frequency trade engine integrating 8+ CEXs/DEXs. Backend in Rust, frontend with Lit.",
+    "techStack": ["Rust", "High-Frequency Trading", "CEX", "DEX", "Lit", "Backend"]
+  },
+  {
+    "id": 4,
+    "years": "2024",
+    "company": "Skynet DAO",
+    "role": "Co-founder",
+    "summary": "Created decentralized network of Llama.cpp servers hosting quantized AI models locally.",
+    "techStack": ["Llama.cpp", "AI Models", "Decentralized Network", "Quantization"]
+  },
+  {
+    "id": 5,
+    "years": "2024–2025",
+    "company": "DEAI Company",
+    "role": "Independent Consultant",
+    "summary": "Worked with founders on ideation, whitepapers, and AI agent apps. Created AI games, videos, and campaigns.",
+    "techStack": ["AI Agents", "Whitepapers", "AI Games", "Video Production", "Campaign Design"]
+  },
+  {
+    "id": 6,
+    "years": "Present",
+    "company": "Content Creator",
+    "role": "AI Filmmaker",
+    "summary": "Producing AI-based short films, ads, tutorials, and music videos.",
+    "techStack": ["AI Video Generation", "Filmmaking", "Content Creation", "Tutorials", "Music Videos"]
+  }
+]
+
