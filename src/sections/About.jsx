@@ -7,7 +7,7 @@ export default function About() {
   const [expandedItem, setExpandedItem] = useState(null)
 
   return (
-    <section id="about" className="min-h-screen w-screen flex items-center py-12 flex-shrink-0 overflow-hidden">
+    <section id="about" className="min-h-screen w-screen flex items-center py-12 flex-shrink-0 overflow-y-auto lg:overflow-hidden">
       <div className="container mx-auto px-6 max-w-6xl h-full flex flex-col justify-center">
         <motion.h2
           initial={{ opacity: 0, y: 20 }}

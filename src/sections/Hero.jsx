@@ -1,6 +1,5 @@
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { ChevronDown } from "lucide-react"
 
 export default function Hero() {
   const scrollToNext = () => {
@@ -54,15 +53,6 @@ export default function Hero() {
               Enter My World
             </Button>
           </motion.div>
-        </motion.div>
-
-        {/* Scroll Indicator */}
-        <motion.div
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
-          animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        >
-          <ChevronDown className="w-8 h-8 text-white/80" />
         </motion.div>
       </div>
     </section>
