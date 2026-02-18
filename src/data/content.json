@@ -1,0 +1,35 @@
+{
+  "platforms": [
+    {
+      "name": "YouTube",
+      "handle": "@sksudharsanan",
+      "url": "https://youtube.com/@sksudharsanan",
+      "stats": {
+        "videos": "58",
+        "subscribers": "192",
+        "views": "35,871"
+      },
+      "content": "Tech Podcasts, Experience sharing, AI and Rust tutorials",
+      "since": "October 2025"
+    },
+    {
+      "name": "Instagram",
+      "handle": "@sudharsanan_kirubanandhan",
+      "url": "https://instagram.com/sudharsanan_kirubanandhan",
+      "stats": {
+        "videos": "37",
+        "followers": "1,450",
+        "views": "220,000+"
+      },
+      "content": "AI news, Crypto education, Cricket reviews",
+      "since": "January 2026"
+    }
+  ],
+  "highlights": [
+    "220,000+ monthly views organically",
+    "12,200+ interactions in last 30 days",
+    "Educational storytelling videos",
+    "Rust programming tutorials",
+    "AI-generated lyric videos & music"
+  ]
+}

@@ -177,3 +177,10 @@ html {
   height: 100vh;
 }
 
+/* Adjust section width on desktop to account for sidebar */
+@media (min-width: 1024px) {
+  .horizontal-scroll section {
+    width: calc(100vw - 16rem); /* 16rem = 256px sidebar width */
+  }
+}
+

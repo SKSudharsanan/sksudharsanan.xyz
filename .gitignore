@@ -61,6 +61,11 @@ Thumbs.db
 *.temp
 .temp
 
+# Python virtual environment
+scripts/.venv/
+__pycache__/
+*.pyc
+
 # Documentation (exclude working docs, keep README.md)
 DOCS_INDEX.md
 START_HERE.md

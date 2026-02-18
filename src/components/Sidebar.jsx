@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion"
-import { Home, User, Video, Music, Code, Briefcase, Mail, Menu, X, ChevronLeft, ChevronRight, Github, Youtube, Twitter, Linkedin } from "lucide-react"
+import { Home, User, Video, Music, Code, Briefcase, Mail, Menu, X, ChevronLeft, ChevronRight, Github, Youtube, Twitter, Linkedin, Instagram } from "lucide-react"
 import { useState, useEffect } from "react"
 
 const menuItems = [
@@ -29,6 +29,7 @@ const iconColors = {
 const socialLinks = [
   { name: "GitHub", icon: Github, url: "https://github.com/sksudharsanan", color: "text-white/70 hover:text-primary" },
   { name: "YouTube", icon: Youtube, url: "https://youtube.com/@sksudharsanan", color: "text-white/70 hover:text-accent" },
+  { name: "Instagram", icon: Instagram, url: "https://instagram.com/sudharsanan_kirubanandhan", color: "text-white/70 hover:text-pink-500" },
   { name: "Twitter", icon: Twitter, url: "https://twitter.com/sksudharsanan", color: "text-white/70 hover:text-primary" },
   { name: "LinkedIn", icon: Linkedin, url: "https://linkedin.com/in/sksudharsanan", color: "text-white/70 hover:text-accent" },
 ]

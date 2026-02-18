@@ -1,0 +1,42 @@
+[
+  {
+    "id": 1,
+    "years": "Feb–Jun 2024",
+    "company": "Decentralized AI Startup",
+    "role": "Co-Founding Engineer",
+    "summary": "Designed decentralized inference infrastructure using llama.cpp as nodes. Developed desktop application using Tauri and Rust. Built system allowing users to run AI models and expose inference endpoints.",
+    "techStack": ["Rust", "Tauri", "llama.cpp", "Decentralized AI"]
+  },
+  {
+    "id": 2,
+    "years": "Jun–Aug 2024",
+    "company": "ID.CV (HackFS)",
+    "role": "Backend & Smart Contract Developer",
+    "summary": "Developed backend systems for decentralized identity platform. Built smart contracts and integrated zero-knowledge identity using Circom and SnarkJS for Web3 credential verification.",
+    "techStack": ["Smart Contracts", "Circom", "SnarkJS", "Zero-Knowledge"]
+  },
+  {
+    "id": 3,
+    "years": "Aug 2024",
+    "company": "FIPChain",
+    "role": "Blockchain Consultant",
+    "summary": "Created technical pitch decks. Helped convert founder ideas into structured development roadmap. Provided consulting on blockchain architecture and product direction.",
+    "techStack": ["Blockchain", "Technical Writing", "Product Strategy"]
+  },
+  {
+    "id": 4,
+    "years": "Sep 2025–Present",
+    "company": "OpenLedger",
+    "role": "Independent AI Consultant",
+    "summary": "Writing whitepapers, technical documentation, pitch decks, and product documentation. Script writing for marketing videos and founder AMA sessions. Developing AI agents for automation and content workflows.",
+    "techStack": ["AI Agents", "Technical Writing", "Whitepapers", "Decentralized AI"]
+  },
+  {
+    "id": 5,
+    "years": "Sep 2025–Present",
+    "company": "Independent Builder",
+    "role": "Tech Creator & Consultant",
+    "summary": "Building Rust-based desktop applications including DeepFocus and ScriptWriter. Developing AI-powered creative workflows for lyric video generation and music production. Writing scripts for marketing videos and storytelling content.",
+    "techStack": ["Rust", "Tauri", "AI Workflows", "Content Creation"]
+  }
+]

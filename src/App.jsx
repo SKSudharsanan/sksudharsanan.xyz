@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react"
 import { ThemeProvider } from "./components/theme-provider"
 import Sidebar from "./components/Sidebar"
+import BackgroundSwitcher from "./components/BackgroundSwitcher"
 import Hero from "./sections/Hero"
 import About from "./sections/About"
 import Videos from "./sections/Videos"
@@ -11,7 +12,15 @@ import Footer from "./sections/Footer"
 
 function App() {
   const [activeSection, setActiveSection] = useState("home")
+  const [currentBg, setCurrentBg] = useState("video")
   const scrollContainerRef = useRef(null)
+
+  // Calculate section width accounting for sidebar on desktop
+  const getSectionWidth = () => {
+    const isDesktop = window.innerWidth >= 1024
+    const sidebarWidth = 256 // 16rem = 256px
+    return isDesktop ? window.innerWidth - sidebarWidth : window.innerWidth
+  }
 
   useEffect(() => {
     const handleScroll = () => {
@@ -19,9 +28,9 @@ function App() {
       if (!container) return
 
       const scrollLeft = container.scrollLeft
-      const sectionWidth = window.innerWidth
+      const sectionWidth = getSectionWidth()
       const sectionIndex = Math.round(scrollLeft / sectionWidth)
-      
+
       const sections = ["home", "about", "videos", "music", "projects", "services", "contact"]
       if (sections[sectionIndex]) {
         setActiveSection(sections[sectionIndex])
@@ -32,7 +41,7 @@ function App() {
     if (container) {
       container.addEventListener("scroll", handleScroll)
       handleScroll() // Initial check
-      
+
       return () => container.removeEventListener("scroll", handleScroll)
     }
   }, [])
@@ -40,10 +49,10 @@ function App() {
   const scrollToSection = (sectionId) => {
     const sections = ["home", "about", "videos", "music", "projects", "services", "contact"]
     const index = sections.indexOf(sectionId)
-    
+
     if (index !== -1 && scrollContainerRef.current) {
       scrollContainerRef.current.scrollTo({
-        left: index * window.innerWidth,
+        left: index * getSectionWidth(),
         behavior: "smooth"
       })
     }

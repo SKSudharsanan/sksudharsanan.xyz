@@ -36,7 +36,7 @@ const socialLinks = [
 
 export default function Footer() {
   return (
-    <footer id="contact" className="min-h-screen w-screen flex items-center justify-center flex-shrink-0 border-t border-white/10">
+    <footer id="contact" className="min-h-screen flex items-center justify-center flex-shrink-0 border-t border-white/10">
       <div className="container mx-auto px-6 max-w-4xl">
         {/* Social Links */}
         <motion.div

@@ -78,7 +78,7 @@ export default function Music() {
   }
 
   return (
-    <section id="music" className="min-h-screen w-screen flex items-center py-12 relative overflow-hidden flex-shrink-0">
+    <section id="music" className="min-h-screen flex items-center py-12 relative overflow-hidden flex-shrink-0">
       <div className="container mx-auto px-6 max-w-4xl h-full flex flex-col justify-center">
         <motion.h2
           initial={{ opacity: 0, y: 20 }}

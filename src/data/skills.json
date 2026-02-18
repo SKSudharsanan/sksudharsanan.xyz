@@ -1,0 +1,30 @@
+{
+  "programming": {
+    "title": "Programming Languages",
+    "items": ["Python", "Java", "JavaScript", "Go", "Rust", "TypeScript"]
+  },
+  "frameworks": {
+    "title": "Frameworks & Tools",
+    "items": ["React", "Next.js", "Node.js", "Tauri", "Spring Boot", "FastAPI", "Flask", "PyTorch", "TensorFlow"]
+  },
+  "aiTools": {
+    "title": "AI Tools",
+    "items": ["Claude Code", "Cursor", "Langchain", "Crew AI", "n8n", "Suno", "Elevenlabs", "Midjourney", "Veo3", "Runway", "Heygen"]
+  },
+  "blockchain": {
+    "title": "Blockchain",
+    "items": ["Hyperledger Fabric", "Ethereum", "R3 Corda", "Smart Contracts", "Circom", "SnarkJS"]
+  },
+  "cloud": {
+    "title": "Cloud & DevOps",
+    "items": ["AWS", "Azure", "GCP", "Jenkins", "GitLab CI/CD", "Docker"]
+  },
+  "databases": {
+    "title": "Databases",
+    "items": ["PostgreSQL", "MongoDB", "Redis", "MySQL"]
+  },
+  "creative": {
+    "title": "Creative & Business",
+    "items": ["Video Editing", "DaVinci Resolve", "Capcut", "Figma", "Script Writing", "Content Strategy"]
+  }
+}

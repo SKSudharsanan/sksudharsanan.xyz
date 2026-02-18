@@ -3,49 +3,24 @@
     "id": 1,
     "years": "2018–2021",
     "company": "HTC Global Services",
-    "role": "R&D Engineer",
-    "summary": "Worked in Hyperledger Fabric, Ethereum, R3 Corda. Built chatbots and ML pipelines for face recognition and MLOps workflows.",
-    "techStack": ["Hyperledger Fabric", "Ethereum", "R3 Corda", "Machine Learning", "MLOps", "Face Recognition"]
+    "role": "Software Engineer",
+    "summary": "Developed blockchain applications using Hyperledger Fabric, R3 Corda, and Ethereum. Built enterprise blockchain systems for supply chain, resource sharing, and asset digitization. Created chatbot systems for enterprise clients including IHCL and Shoppers Stop with payment integration and WhatsApp deployment.",
+    "techStack": ["Hyperledger Fabric", "Ethereum", "R3 Corda", "Dialogflow", "Node.js", "Python"]
   },
   {
     "id": 2,
     "years": "2021–2023",
     "company": "Guardian Link",
-    "role": "Blockchain R&D",
-    "summary": "Researched L2s (OP Stack, StarkEx, Starknet, Besu, Cosmos). Built custodial & non-custodial wallets and Web3 domain systems.",
-    "techStack": ["OP Stack", "StarkEx", "Starknet", "Besu", "Cosmos", "Web3", "Wallets"]
+    "role": "Blockchain R&D Engineer",
+    "summary": "Built IDO launchpad, NFT marketplace, and multi-chain naming service using Ethereum and StarkNet. Developed Cairo and Solidity smart contracts, generative NFT algorithms, and custodial wallet systems using Node.js and HashiCorp Vault. Conducted Layer 2 research and contributed to StarkNet and StarkEx integrations.",
+    "techStack": ["Ethereum", "StarkNet", "Cairo", "Solidity", "Node.js", "HashiCorp Vault"]
   },
   {
     "id": 3,
     "years": "2023–2024",
     "company": "Astra",
-    "role": "SDE (Rust)",
-    "summary": "Founding engineer for high-frequency trade engine integrating 8+ CEXs/DEXs. Backend in Rust, frontend with Lit.",
-    "techStack": ["Rust", "High-Frequency Trading", "CEX", "DEX", "Lit", "Backend"]
-  },
-  {
-    "id": 4,
-    "years": "2024",
-    "company": "Skynet DAO",
-    "role": "Co-founder",
-    "summary": "Created decentralized network of Llama.cpp servers hosting quantized AI models locally.",
-    "techStack": ["Llama.cpp", "AI Models", "Decentralized Network", "Quantization"]
-  },
-  {
-    "id": 5,
-    "years": "2024–2025",
-    "company": "DEAI Company",
-    "role": "Independent Consultant",
-    "summary": "Worked with founders on ideation, whitepapers, and AI agent apps. Created AI games, videos, and campaigns.",
-    "techStack": ["AI Agents", "Whitepapers", "AI Games", "Video Production", "Campaign Design"]
-  },
-  {
-    "id": 6,
-    "years": "Present",
-    "company": "Content Creator",
-    "role": "AI Filmmaker",
-    "summary": "Producing AI-based short films, ads, tutorials, and music videos.",
-    "techStack": ["AI Video Generation", "Filmmaking", "Content Creation", "Tutorials", "Music Videos"]
+    "role": "Rust Backend Engineer",
+    "summary": "Developed backend services in Rust for high-fidelity trading aggregation system. Integrated exchange APIs including Binance, KuCoin, Huobi, and Kraken. Built authentication and automated API testing frameworks using Node.js, Jest, and Supertest.",
+    "techStack": ["Rust", "Trading Systems", "Exchange APIs", "Firebase", "Node.js", "Jest"]
   }
 ]
-

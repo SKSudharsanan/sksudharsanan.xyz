@@ -24,7 +24,7 @@ const accentColors = {
 
 export default function Projects() {
   return (
-    <section id="projects" className="min-h-screen w-screen flex items-center py-12 flex-shrink-0 overflow-hidden">
+    <section id="projects" className="min-h-screen flex items-center py-12 flex-shrink-0 overflow-hidden">
       <div className="container mx-auto px-6 max-w-7xl h-full flex flex-col justify-center">
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
