@@ -1,8 +1,11 @@
+import { useState, lazy, Suspense } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { FileText, ExternalLink, Calendar } from "lucide-react"
+import { FileText, Maximize2, Calendar } from "lucide-react"
 import blogsData from "@/data/blogs.json"
+
+const PdfViewer = lazy(() => import("@/components/PdfViewer"))
 
 const glowColors = {
   blue: "hover:shadow-[0_0_30px_rgba(166,216,255,0.6)]",
@@ -35,6 +38,8 @@ const formatDate = (iso) => {
 }
 
 export default function Blogs() {
+  const [openBlog, setOpenBlog] = useState(null)
+
   return (
     <section id="blogs" className="min-h-screen flex items-center py-12 flex-shrink-0 overflow-hidden">
       <div className="container mx-auto px-6 max-w-7xl h-full flex flex-col justify-center">
@@ -104,17 +109,12 @@ export default function Blogs() {
                     variant="outline"
                     size="sm"
                     className="w-full bg-black/60 hover:bg-black/80 text-white text-xs border-white/20"
-                    asChild
+                    onClick={() => setOpenBlog(blog)}
                   >
-                    <a
-                      href={blog.file}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-2"
-                    >
+                    <span className="flex items-center justify-center gap-2">
                       <span>Read PDF</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
+                      <Maximize2 className="w-3 h-3" />
+                    </span>
                   </Button>
                 </CardContent>
               </Card>
@@ -122,6 +122,17 @@ export default function Blogs() {
           ))}
         </div>
       </div>
+
+      {openBlog && (
+        <Suspense fallback={null}>
+          <PdfViewer
+            isOpen={!!openBlog}
+            file={openBlog?.file}
+            title={openBlog?.title}
+            onClose={() => setOpenBlog(null)}
+          />
+        </Suspense>
+      )}
     </section>
   )
 }
