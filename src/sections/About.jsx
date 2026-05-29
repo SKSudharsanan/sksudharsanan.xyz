@@ -1,6 +1,7 @@
 import { motion } from "framer-motion"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Youtube, Instagram, Facebook, ExternalLink } from "lucide-react"
 import timelineData from "@/data/timeline.json"
 import freelanceData from "@/data/freelance.json"
 import skillsData from "@/data/skills.json"
@@ -200,11 +201,8 @@ export default function About() {
                 {/* Platform Stats */}
                 <div className="space-y-4 mb-4">
                   {contentData.platforms.map((platform, idx) => (
-                    <a
+                    <div
                       key={idx}
-                      href={platform.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
                       className="block p-3 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
                     >
                       <div className="flex items-center justify-between mb-2">
@@ -215,7 +213,7 @@ export default function About() {
                       <div className="grid grid-cols-3 gap-2 text-center mb-2">
                         <div>
                           <p className="text-sm font-bold text-primary">{platform.stats.videos}</p>
-                          <p className="text-[10px] text-white/50">Videos</p>
+                          <p className="text-[10px] text-white/50">{platform.name.includes("Instagram") ? "Posts" : "Videos"}</p>
                         </div>
                         <div>
                           <p className="text-sm font-bold text-primary">{platform.stats.subscribers || platform.stats.followers}</p>
@@ -226,8 +224,36 @@ export default function About() {
                           <p className="text-[10px] text-white/50">Views</p>
                         </div>
                       </div>
-                      <p className="text-[10px] text-white/70">{platform.content}</p>
-                    </a>
+                      <p className="text-[10px] text-white/70 mb-2">{platform.content}</p>
+                      <div className="flex gap-3 pt-2 border-t border-white/10">
+                        <a
+                          href={platform.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 text-[10px] text-white/70 hover:text-primary transition-colors"
+                        >
+                          {platform.name.includes("YouTube") ? (
+                            <Youtube className="w-3 h-3" />
+                          ) : (
+                            <Instagram className="w-3 h-3" />
+                          )}
+                          <span>{platform.name.includes("YouTube") ? "YouTube" : "Instagram"}</span>
+                          <ExternalLink className="w-2.5 h-2.5" />
+                        </a>
+                        {platform.fbUrl && (
+                          <a
+                            href={platform.fbUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1 text-[10px] text-white/70 hover:text-primary transition-colors"
+                          >
+                            <Facebook className="w-3 h-3" />
+                            <span>Facebook</span>
+                            <ExternalLink className="w-2.5 h-2.5" />
+                          </a>
+                        )}
+                      </div>
+                    </div>
                   ))}
                 </div>
 

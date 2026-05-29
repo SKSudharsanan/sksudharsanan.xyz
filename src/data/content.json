@@ -5,28 +5,29 @@
       "handle": "@sksudharsanan",
       "url": "https://youtube.com/@sksudharsanan",
       "stats": {
-        "videos": "58",
-        "subscribers": "192",
-        "views": "35,871"
+        "videos": "62",
+        "subscribers": "200",
+        "views": "43,000"
       },
       "content": "Tech Podcasts, Experience sharing, AI and Rust tutorials",
       "since": "October 2025"
     },
     {
-      "name": "Instagram",
+      "name": "Instagram + Facebook",
       "handle": "@sudharsanan_kirubanandhan",
       "url": "https://instagram.com/sudharsanan_kirubanandhan",
+      "fbUrl": "https://www.facebook.com/sudharsanankirubanandhan",
       "stats": {
-        "videos": "37",
-        "followers": "1,450",
-        "views": "220,000+"
+        "videos": "136",
+        "followers": "1.5K + 4.2K",
+        "views": "4,20,000+"
       },
-      "content": "AI news, Crypto education, Cricket reviews",
+      "content": "AI news, Crypto education, Cricket reviews — cross-posted to Facebook",
       "since": "January 2026"
     }
   ],
   "highlights": [
-    "220,000+ monthly views organically",
+    "420,000+ monthly views organically",
     "12,200+ interactions in last 30 days",
     "Educational storytelling videos",
     "Rust programming tutorials",
