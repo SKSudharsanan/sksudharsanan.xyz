@@ -46,9 +46,9 @@ export default function Services() {
                   style={{ height: "400px" }}
                 >
                   <iframe
-                    src="https://skandg.studio"
+                    src="https://asgorithm.com"
                     className="w-full h-full rounded-lg"
-                    title="SkandG.studio"
+                    title="Asgorithm"
                     frameBorder="0"
                     loading="lazy"
                   />

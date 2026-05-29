@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion"
-import { Home, User, Video, Music, Code, Briefcase, Mail, Menu, X, ChevronLeft, ChevronRight, Github, Youtube, Twitter, Linkedin, Instagram } from "lucide-react"
+import { Home, User, Video, Music, Code, Briefcase, BookOpen, Mail, Menu, X, ChevronLeft, ChevronRight, Github, Youtube, Twitter, Linkedin, Instagram } from "lucide-react"
 import { useState, useEffect } from "react"
 
 const menuItems = [
@@ -8,6 +8,7 @@ const menuItems = [
   { id: "videos", icon: Video, label: "Videos", color: "pink" },
   { id: "music", icon: Music, label: "Music", color: "mint" },
   { id: "projects", icon: Code, label: "Projects", color: "blue" },
+  { id: "blogs", icon: BookOpen, label: "Blogs", color: "pink" },
   { id: "services", icon: Briefcase, label: "Services", color: "purple" },
 
 ]

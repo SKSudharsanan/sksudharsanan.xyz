@@ -7,6 +7,7 @@ import About from "./sections/About"
 import Videos from "./sections/Videos"
 import Music from "./sections/Music"
 import Projects from "./sections/Projects"
+import Blogs from "./sections/Blogs"
 import Services from "./sections/Services"
 import Footer from "./sections/Footer"
 
@@ -31,7 +32,7 @@ function App() {
       const sectionWidth = getSectionWidth()
       const sectionIndex = Math.round(scrollLeft / sectionWidth)
 
-      const sections = ["home", "about", "videos", "music", "projects", "services", "contact"]
+      const sections = ["home", "about", "videos", "music", "projects", "blogs", "services", "contact"]
       if (sections[sectionIndex]) {
         setActiveSection(sections[sectionIndex])
       }
@@ -47,7 +48,7 @@ function App() {
   }, [])
 
   const scrollToSection = (sectionId) => {
-    const sections = ["home", "about", "videos", "music", "projects", "services", "contact"]
+    const sections = ["home", "about", "videos", "music", "projects", "blogs", "services", "contact"]
     const index = sections.indexOf(sectionId)
 
     if (index !== -1 && scrollContainerRef.current) {
@@ -100,6 +101,7 @@ function App() {
           <Videos />
           <Music />
           <Projects />
+          <Blogs />
           <Services />
           <Footer />
         </main>
