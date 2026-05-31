@@ -3,9 +3,18 @@
     "id": 1,
     "title": "Pick a Lane",
     "description": "For 8 years, I was told to pick a lane. Instead, I kept learning and let curiosity shape my career.",
-    "file": "/blogs/Pick a lane.pdf",
+    "file": "/blogs/pick-a-lane.html",
     "date": "2026-05-29",
     "tags": ["Focus", "Mindset", "Essay"],
     "color": "blue"
+  },
+  {
+    "id": 2,
+    "title": "What's Inside a LLM",
+    "description": "A visual walk through how large language models actually work, from tokens to transformers.",
+    "file": "/blogs/whats-inside-a-llm.html",
+    "date": "2026-05-31",
+    "tags": ["AI", "LLM", "Explainer"],
+    "color": "purple"
   }
 ]

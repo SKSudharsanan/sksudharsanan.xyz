@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inside an LLM — carousel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --white:#ffffff;
+  --muted:#94989f;
+  --faint:#5d616a;
+  --line:rgba(255,255,255,0.16);
+  --green:#46c08a;
+  --amber:#d98b4a;
+  --blue:#4a96d9;
+  --mono:'IBM Plex Mono',monospace;
+  --sans:'Poppins',sans-serif;
+  --W:1080px; --H:1350px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#1a1b1e;font-family:var(--sans);display:flex;flex-direction:column;align-items:center;gap:26px;padding:46px 16px 80px;}
+.frame{width:var(--W);height:var(--H);transform-origin:top center;}
+.stage{display:flex;flex-direction:column;align-items:center;gap:26px;}
+
+.slide{
+  position:relative;width:var(--W);height:var(--H);overflow:hidden;border-radius:26px;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(46,104,66,0.62), transparent 46%),
+    radial-gradient(circle at 90% 6%, rgba(74,46,104,0.58), transparent 44%),
+    radial-gradient(circle at 80% 94%, rgba(22,98,114,0.55), transparent 50%),
+    radial-gradient(circle at 8% 96%, rgba(128,74,28,0.48), transparent 46%),
+    #0a0b0d;
+  color:var(--white);padding:84px 86px 68px;display:flex;flex-direction:column;
+  box-shadow:0 30px 80px rgba(0,0,0,0.5);
+}
+.slide::after{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:0.05;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.tag{position:relative;z-index:2;}
+.tag .tick{width:54px;height:3px;background:var(--white);border-radius:3px;margin-bottom:16px;}
+.tag .lbl{font-size:21px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#dfe2e6;display:flex;align-items:center;gap:11px;}
+.tag .lbl .dot{width:9px;height:9px;border-radius:50%;background:var(--white);display:inline-block;}
+
+.body{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;justify-content:center;}
+.body.top{justify-content:flex-start;padding-top:26px;}
+
+.kicker{font-size:20px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--green);margin-bottom:26px;}
+.kicker.amber{color:var(--amber);}
+.kicker.blue{color:var(--blue);}
+
+h1{font-weight:800;letter-spacing:-0.02em;line-height:1.0;}
+.xl{font-size:100px;}
+.lg{font-size:78px;}
+.md{font-size:58px;line-height:1.06;}
+.sm{font-size:48px;line-height:1.08;}
+.stmt{font-size:56px;font-weight:700;line-height:1.14;letter-spacing:-0.015em;}
+
+.sub{font-size:29px;font-weight:400;line-height:1.5;color:var(--muted);margin-top:30px;max-width:850px;}
+.sub.tight{margin-top:22px;}
+.note{font-size:22px;font-weight:500;line-height:1.5;color:#b9bdc4;margin-top:28px;font-family:var(--mono);}
+.em{color:var(--white);font-weight:600;}
+.emg{color:var(--green);font-weight:600;}
+.code{font-family:var(--mono);}
+
+.foot{position:relative;z-index:2;padding-top:24px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;}
+.foot .handle{font-size:24px;font-weight:600;color:#e7e9ec;}
+.foot .pg{font-size:24px;color:#7e828b;font-family:var(--mono);}
+
+/* roadmap */
+.road{margin-top:40px;display:flex;flex-direction:column;gap:18px;}
+.rrow{display:flex;align-items:center;gap:20px;font-size:30px;font-weight:500;}
+.rrow .n{font-family:var(--mono);font-size:22px;color:var(--green);width:42px;}
+.rrow .a{color:var(--faint);}
+
+/* tokens */
+.tokens{display:flex;flex-wrap:wrap;gap:14px;margin-top:38px;}
+.tok{display:flex;flex-direction:column;align-items:center;gap:8px;}
+.tok .chip{font-size:30px;font-weight:600;padding:14px 22px;border-radius:13px;background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.18);white-space:pre;}
+.tok .id{font-family:var(--mono);font-size:18px;color:var(--green);}
+.tok:nth-child(2) .chip{background:rgba(70,192,138,0.16);border-color:rgba(70,192,138,0.4);}
+.tok:nth-child(4) .chip{background:rgba(217,139,74,0.16);border-color:rgba(217,139,74,0.4);}
+
+.splitrow{display:flex;flex-direction:column;gap:24px;margin-top:40px;}
+.split{display:flex;align-items:center;gap:18px;font-size:31px;}
+.split .word{font-weight:600;font-family:var(--mono);}
+.split .arrow{color:var(--green);font-size:28px;}
+.piece{font-family:var(--mono);font-weight:500;padding:10px 18px;border-radius:11px;background:rgba(255,255,255,0.09);border:1px solid rgba(255,255,255,0.16);}
+
+/* type list (tokenizer / embedding types) */
+.tlist{margin-top:38px;display:flex;flex-direction:column;gap:22px;}
+.titem{border-left:3px solid var(--green);padding-left:22px;}
+.titem.b{border-color:var(--blue);}
+.titem.a{border-color:var(--amber);}
+.titem .nm{font-size:30px;font-weight:700;}
+.titem .nm span{font-family:var(--mono);font-size:21px;font-weight:500;color:var(--muted);margin-left:10px;}
+.titem .ds{font-size:25px;color:var(--muted);line-height:1.42;margin-top:6px;}
+
+/* embedding grid */
+.egrid{display:grid;grid-template-columns:repeat(12,1fr);gap:7px;margin-top:40px;max-width:760px;}
+.egrid .cell{aspect-ratio:1;border-radius:6px;}
+.legend{display:flex;gap:26px;margin-top:22px;font-size:22px;color:var(--muted);align-items:center;}
+.legend .sw{display:inline-block;width:18px;height:18px;border-radius:5px;vertical-align:-3px;margin-right:8px;}
+
+/* cluster (emotion) */
+.cluster{margin-top:38px;display:flex;flex-wrap:wrap;gap:16px;align-items:center;}
+.bub{font-size:27px;font-weight:600;padding:13px 22px;border-radius:99px;}
+.bub.warm{background:rgba(70,192,138,0.18);border:1px solid rgba(70,192,138,0.45);}
+.bub.cold{background:rgba(217,107,74,0.16);border:1px solid rgba(217,107,74,0.4);}
+.bub.far{opacity:0.85;}
+
+/* attention */
+.attn{margin-top:40px;display:flex;flex-direction:column;gap:14px;font-size:34px;font-weight:600;}
+.attn .line{display:flex;gap:14px;flex-wrap:wrap;}
+.attn .w{padding:8px 16px;border-radius:11px;background:rgba(255,255,255,0.07);}
+.attn .w.hot{background:rgba(70,192,138,0.22);border:1px solid rgba(70,192,138,0.5);}
+.attn .w.cold{opacity:0.4;}
+
+/* gradient descent svg */
+.gd{margin-top:34px;}
+
+/* logits + softmax + topk bars */
+.probs{margin-top:34px;display:flex;flex-direction:column;gap:15px;max-width:850px;}
+.prow{display:flex;align-items:center;gap:18px;position:relative;}
+.prow .pt{width:160px;text-align:right;font-family:var(--mono);font-size:28px;font-weight:500;}
+.prow .pbar{flex:1;height:36px;background:rgba(255,255,255,0.08);border-radius:8px;overflow:hidden;}
+.prow .pbar>div{height:100%;border-radius:8px;background:linear-gradient(90deg,var(--green),#2f8f6a);}
+.prow .pbar.raw>div{background:linear-gradient(90deg,var(--amber),#a8652f);}
+.prow .pp{width:96px;font-family:var(--mono);font-size:24px;color:var(--muted);}
+.prow.dim{opacity:0.28;}
+.cut{margin:8px 0 4px 178px;font-family:var(--mono);font-size:21px;color:var(--green);border-top:2px dashed rgba(70,192,138,0.6);padding-top:8px;}
+
+.formula{font-family:var(--mono);font-size:30px;color:#fff;margin-top:32px;background:rgba(255,255,255,0.06);border:1px solid var(--line);border-radius:12px;padding:22px 26px;display:inline-block;}
+.formula small{color:var(--green);}
+
+/* CTA */
+.cta{margin-top:30px;background:rgba(255,255,255,0.06);border:1px solid var(--line);border-radius:18px;padding:32px 34px;}
+.cta .t{font-size:27px;font-weight:500;line-height:1.45;}
+.cta .lnk{margin-top:22px;font-family:var(--mono);font-size:25px;color:var(--green);word-break:break-all;}
+.bigcta{font-size:120px;font-weight:800;letter-spacing:-0.03em;line-height:0.95;margin-top:26px;}
+
+.toolbar{position:fixed;top:0;left:0;right:0;background:rgba(12,13,15,0.92);backdrop-filter:blur(8px);color:#cfd2d7;
+  font-family:var(--mono);font-size:13px;padding:10px 16px;display:flex;gap:18px;align-items:center;justify-content:center;z-index:99;border-bottom:1px solid rgba(255,255,255,0.08);}
+.toolbar b{color:#fff;}
+.toolbar button{font-family:var(--mono);font-size:13px;background:#fff;color:#0a0b0d;border:none;border-radius:7px;padding:7px 14px;cursor:pointer;font-weight:600;}
+
+@media print{
+  body{background:#fff;padding:0;gap:0;}
+  .toolbar{display:none;}
+  .stage{gap:0;}
+  .frame{transform:none!important;height:1350px!important;}
+  .slide{border-radius:0;box-shadow:none;page-break-after:always;}
+  @page{size:1080px 1350px;margin:0;}
+}
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <span>📐 <b>1080×1350</b> · 26 slides · no em dashes in copy</span>
+  <span>Export: <b>Cmd/Ctrl+P → Save as PDF</b> (margins off)</span>
+  <button onclick="window.print()">Print / PDF</button>
+</div>
+
+<div class="stage">
+
+<!-- 01 TITLE -->
+<div class="frame"><div class="slide">
+  <div class="tag"><div class="tick"></div><div class="lbl"><span class="dot"></span>HOW LLMs WORK · 01</div></div>
+  <div class="body">
+    <h1 class="xl">What really<br>happens when<br>you hit <em style="font-style:normal;color:var(--green)">enter</em>?</h1>
+    <p class="sub">A look inside an LLM. One prompt, traced from your text to the next word it writes.</p>
+  </div>
+  <div class="foot"><span class="handle">@sksudharsanan</span><span class="pg">01 / 26</span></div>
+</div></div>
+
+<!-- 02 BRIDGE -->
+<div class="frame"><div class="slide">
+  <div class="tag"><div class="tick"></div><div class="lbl"><span class="dot"></span>HOW LLMs WORK · 01</div></div>
+  <div class="body top">
+    <h1 class="md">It all started<br>during the pandemic.</h1>
+    <p class="sub tight">I built 10 to 12 contextual chatbots for different scenarios, across frameworks like <span class="em">Dialogflow</span>, <span class="em">Rasa</span> and <span class="em">Yellow.ai</span>. They were all intent based.</p>
+    <p class="sub tight">My fellow engineers and I spent most of our time training how a user <span class="em">might</span> ask a question, then wiring up the whole flow. Add too few training phrases and the intent just fails.</p>
+    <p style="color:var(--amber);font-size:32px;font-weight:600;line-height:1.4;margin-top:30px;max-width:880px;">For an engineer who understood very little about AI back then, finding out why it broke was a nightmare.</p>
+  </div>
+  <div class="foot"><span class="handle">@sksudharsanan</span><span class="pg">02 / 26</span></div>
+</div></div>
+
+<!-- 03 THE TURN -->
+<div class="frame"><div class="slide">
+  <div class="tag"><div class="tick"></div><div class="lbl"><span class="dot"></span>HOW LLMs WORK · 01</div></div>
+  <div class="body top">
+    <h1 class="md">Then everyone started<br>buzzing about one<br>chatbot.</h1>
+    <p class="sub tight">Fast forward. After I went back to blockchain, people were suddenly talking about an AI chatbot that was <span class="em">generative</span>, one that could actually understand what you said and answer you back.</p>
+    <p class="sub tight">I got curious. I tried it out, and I was amazed.</p>
+    <p style="color:var(--green);font-size:32px;font-weight:600;line-height:1.4;margin-top:30px;max-width:880px;">That pulled me in deeper. I had to know how it actually worked, so I started searching the internet upside down.</p>
+  </div>
+  <div class="foot"><span class="handle">@sksudharsanan</span><span class="pg">03 / 26</span></div>
+</div></div>
+
+<!-- 04 THE RESOURCES -->
+<div class="frame"><div class="slide">
+  <div class="tag"><div class="tick"></div><div class="lbl"><span class="dot"></span>HOW LLMs WORK · 01</div></div>
+  <div class="body top">
+    <div class="kicker">circa March 2023</div>
+    <h1 class="sm">The curiosity led me<br>to two gems.</h1>
+    <p class="sub tight">A two hour Karpathy video on building a GPT from scratch. It took me a <span class="em">month</span>, and a pile of other clips, before it actually clicked. Then 3Blue1Brown made the math and the techniques finally make sense.</p>
+    <div class="tlist" style="margin-top:30px;">
+      <div class="titem"><div class="nm"><a href="https://youtu.be/kCc8FmEb1nY" style="color:inherit;text-decoration:none;">Andrej Karpathy</a></div><div class="ds">Let's build GPT from scratch &middot; about 2 hrs</div><div style="font-family:var(--mono);font-size:19px;color:var(--green);margin-top:5px;">youtu.be/kCc8FmEb1nY</div></div>
+      <div class="titem b"><div class="nm"><a href="https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi" style="color:inherit;text-decoration:none;">3Blue1Brown</a></div><div class="ds">Neural Networks series &middot; the math behind it</div><div style="font-family:var(--mono);font-size:19px;color:var(--blue);margin-top:5px;">youtube.com &middot; Neural Networks playlist</div></div>
+    </div>
+    <p style="color:var(--green);font-size:30px;font-weight:600;line-height:1.4;margin-top:28px;max-width:880px;">Highly recommend both, whether you are new to this or you want to understand LLMs deeper.</p>
+  </div>
+  <div class="foot"><span class="handle">@sksudharsanan</span><span class="pg">04 / 26</span></div>
+</div></div>
+
+<!-- 05 MY APPROACH -->
+<div class="frame"><div class="slide">
+  <div class="tag"><div class="tick"></div><div class="lbl"><span class="dot"></span>HOW LLMs WORK · 01</div></div>
+  <div class="body top">
+    <h1 class="sm">Where do I even start<br>writing about all this?</h1>
+    <p class="sub tight">When I sat down to write about my explorations in AI, I figured, what better way to begin than explaining what I actually know about LLMs, and how I connect them with <span class="em">senses</span> more than the math.</p>
+    <p class="sub tight">I believe the best way to learn anything is to reverse engineer it. So I am taking a bottom down approach, from the view of how a <span class="em">user</span> uses an LLM, not how one is built.</p>
+    <p class="sub tight">We start with a prompt, and go layer by layer.</p>
+    <div style="margin-top:26px;display:flex;align-items:center;gap:16px;background:rgba(255,255,255,0.06);border:1px solid var(--line);border-radius:14px;padding:20px 24px;max-width:760px;">
+      <span style="font-family:var(--mono);font-size:30px;font-weight:500;">The capital of France is</span>
+      <span style="display:inline-block;width:3px;height:36px;background:var(--green);"></span>
+    </div>
+  </div>
+  <div class="foot"><span class="handle">@sksudharsanan</span><span class="pg">05 / 26</span></div>
+</div></div>
+
+
+<!-- 06 ROADMAP -->
+<div class="frame"><div class="slide">
+  <div class="tag"><div class="tick"></div><div class="lbl"><span class="dot"></span>HOW LLMs WORK · 01</div></div>
+  <div class="body top">
+    <h1 class="md">That prompt moves<br>through six stages.</h1>
+    <div class="road">
+      <div class="rrow"><span class="n">01</span> Tokenization</div>
+      <div class="rrow"><span class="n">02</span> Embeddings</div>
+      <div class="rrow"><span class="n">03</span> Attention</div>
+      <div class="rrow"><span class="n">04</span> The MLP</div>
+      <div class="rrow"><span class="n">05</span> Training</div>
+      <div class="rrow"><span class="n">06</span> Prediction</div>
+    </div>
+  </div>
+  <div class="foot"><span class="handle">@sksudharsanan</span><span class="pg">06 / 26</span></div>
+</div></div>
+
+
+
+<!-- 07 ONLY NUMBERS -->
+<div class="frame"><div class="slide">
+  <div class="tag"><div class="tick"></div><div class="lbl"><span class="dot"></span>HOW LLMs WORK · 01</div></div>
+  <div class="body top">
+    <div class="kicker">Steps 01 + 02</div>
+    <h1 class="sm">Like any computer,<br>a model only<br>understands numbers.</h1>
+    <p class="sub tight">It does not read words. So the real question is, how does our prompt turn into numbers, and how do those numbers help the model understand the <span class="em">relationship</span> between the words?</p>
+    <p style="color:var(--green);font-size:30px;font-weight:600;line-height:1.4;margin-top:28px;max-width:880px;">That whole job is handled by the first two steps: tokenization and embedding.</p>
+  </div>
+  <div class="foot"><span class="handle">@sksudharsanan</span><span class="pg">07 / 26</span></div>
+</div></div>
+
+
+<!-- 08 TOKENIZATION -->
+<div class="frame"><div class="slide">
+  <div class="tag"><div class="tick"></div><div class="lbl"><span class="dot"></span>HOW LLMs WORK · 01</div></div>
+  <div class="body top">
+    <div class="kicker">01 — Tokenization</div>
+    <h1 class="md">Imagine learning<br>a new language.</h1>
+    <p class="sub tight">How do you find the meaning of a sentence? You find the meaning of each word, then connect them the right way.</p>
+    <p class="sub tight">A model does the same. Its first step in understanding context is splitting the prompt into smaller chunks. That process is called <span class="em">tokenization</span>.</p>
+    <div class="tokens">
+      <div class="tok"><div class="chip">The</div><div class="id">464</div></div>
+      <div class="tok"><div class="chip"> capital</div><div class="id">3139</div></div>
+      <div class="tok"><div class="chip"> of</div><div class="id">286</div></div>
+      <div class="tok"><div class="chip"> France</div><div class="id">4881</div></div>
+      <div class="tok"><div class="chip"> is</div><div class="id">318</div></div>
+    </div>
+  </div>
+  <div class="foot"><span class="handle">@sksudharsanan</span><span class="pg">08 / 26</span></div>
+</div></div>
+
+<!-- 09 TOKENIZATION WHY -->
+<div class="frame"><div class="slide">
+  <div class="tag"><div class="tick"></div><div class="lbl"><span class="dot"></span>HOW LLMs WORK · 01</div></div>
+  <div class="body top">
+    <div class="kicker">01 — Tokenization</div>
+    <h1 class="sm">So how do we<br>actually split it?</h1>
+    <p class="sub tight">Two obvious options: split by characters, or split by whole words. Both break down.</p>
+    <div class="tlist" style="margin-top:26px;gap:18px;">
+      <div class="titem a"><div class="nm">By character</div><div class="ds">Tiny vocabulary, but every word becomes a long guessing game. Too many combinations to predict well.</div></div>
+      <div class="titem a"><div class="nm">By whole word</div><div class="ds">No dataset on earth holds every word that exists. New and rare words simply break it.</div></div>
+      <div class="titem"><div class="nm">By subword chunk <span>the sweet spot</span></div><div class="ds">Common words stay whole. Rare words split into reusable pieces the model has seen elsewhere.</div></div>
+    </div>
+  </div>
+  <div class="foot"><span class="handle">@sksudharsanan</span><span class="pg">09 / 26</span></div>
+</div></div>
+
+<!-- 10 TOKENIZATION TRADEOFF -->
+<div class="frame"><div class="slide">
+  <div class="tag"><div class="tick"></div><div class="lbl"><span class="dot"></span>HOW LLMs WORK · 01</div></div>
+  <div class="body top">
+    <div class="kicker">01 — Tokenization</div>
+    <h1 class="sm">"unbelievable",<br>three ways.</h1>
+    <div class="splitrow" style="margin-top:34px;gap:28px;">
+      <div>
+        <div class="split"><span class="word" style="color:var(--amber)">characters</span><span class="arrow">→</span><span class="piece">u</span><span class="piece">n</span><span class="piece">b</span><span class="piece">e</span><span class="piece">l</span><span class="piece">i</span><span class="piece">…</span></div>
+        <p class="note" style="margin-top:10px;">12 tokens. Vocab tiny, but the model must guess 12 times in a row.</p>
+      </div>
+      <div>
+        <div class="split"><span class="word" style="color:var(--amber)">whole word</span><span class="arrow">→</span><span class="piece">unbelievable</span></div>
+        <p class="note" style="margin-top:10px;">1 token, but only if that exact word lives in the vocabulary. Miss it and you are stuck.</p>
+      </div>
+      <div>
+        <div class="split"><span class="word" style="color:var(--green)">subword</span><span class="arrow">→</span><span class="piece">un</span><span class="piece">believ</span><span class="piece">able</span></div>
+        <p class="note" style="margin-top:10px;">3 tokens. Reusable pieces. "un" and "able" show up in thousands of other words.</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span class="handle">@sksudharsanan</span><span class="pg">10 / 26</span></div>
+</div></div>
+
+<!-- 06 TOKENIZATION TYPES -->
+<div class="frame"><div class="slide">
+  <div class="tag"><div class="tick"></div><div class="lbl"><span class="dot"></span>HOW LLMs WORK · 01</div></div>
+  <div class="body top">
+    <div class="kicker">01 — Tokenization · types</div>
+    <h1 class="sm">Top three tokenization<br>techniques used today.</h1>
+    <div class="tlist">
+      <div class="titem"><div class="nm">BPE <span>GPT family</span></div><div class="ds">Starts from characters and merges the most frequent pairs until the vocabulary is full.</div></div>
+      <div class="titem b"><div class="nm">WordPiece <span>BERT</span></div><div class="ds">Chooses the splits that make the training text most probable, not just the most frequent.</div></div>
+      <div class="titem a"><div class="nm">SentencePiece <span>Llama, T5</span></div><div class="ds">Treats raw text including spaces as one stream. Works across any language with no pre cleaning.</div></div>
+    </div>
+  </div>
+  <div class="foot"><span class="handle">@sksudharsanan</span><span class="pg">11 / 26</span></div>
+</div></div>
+
+<!-- 12 EMBEDDINGS -->
+<div class="frame"><div class="slide">
+  <div class="tag"><div class="tick"></div><div class="lbl"><span class="dot"></span>HOW LLMs WORK · 01</div></div>
+  <div class="body top">
+    <div class="kicker blue">02 — Embeddings</div>
+    <h1 class="sm">Okay, now we have<br>numbers. But numbers<br>have no meaning yet.</h1>
+    <p class="sub tight">A token id like 4881 is just a label. It tells the model nothing about what France <span class="em">is</span>, or that it sits anywhere near Paris.</p>
+    <p class="sub tight">So the next step gives every token a long list of numbers, a <span class="em">vector</span>, that actually carries its meaning. In other words, its semantic relationship to every other word. This is called embedding.</p>
+    <div class="egrid" id="egrid"></div>
+    <div class="legend"><span><span class="sw" style="background:rgba(217,107,74,.85)"></span>negative</span><span><span class="sw" style="background:rgba(74,150,217,.85)"></span>positive</span><span>brighter is stronger</span></div>
+  </div>
+  <div class="foot"><span class="handle">@sksudharsanan</span><span class="pg">12 / 26</span></div>
+</div></div>
+
+<!-- 13 EMBEDDINGS AS MEANING -->
+<div class="frame"><div class="slide">
+  <div class="tag"><div class="tick"></div><div class="lbl"><span class="dot"></span>HOW LLMs WORK · 01</div></div>
+  <div class="body top">
+    <div class="kicker blue">02 — Embeddings</div>
+    <h1 class="sm">Think of it as giving<br>each word a feeling.</h1>
+    <p class="sub tight">Not the spelling, the feel. Its tone, its mood, the kind of words it usually hangs around. Words that feel alike end up sitting close together, and words that clash sit far apart.</p>
+    <div class="cluster">
+      <span class="bub warm">happy</span><span class="bub warm">joyful</span><span class="bub warm">cheerful</span>
+      <span class="bub cold far">furious</span>
+    </div>
+    <p class="sub tight" style="margin-top:22px;">And because it is all numbers now, those feelings can be done as math:</p>
+    <p class="note" style="font-size:28px;color:var(--green);margin-top:14px;">king − man + woman ≈ queen</p>
+  </div>
+  <div class="foot"><span class="handle">@sksudharsanan</span><span class="pg">13 / 26</span></div>
+</div></div>
+
+<!-- 14 EMBEDDING TYPES -->
+<div class="frame"><div class="slide">
+  <div class="tag"><div class="tick"></div><div class="lbl"><span class="dot"></span>HOW LLMs WORK · 01</div></div>
+  <div class="body top">
+    <div class="kicker blue">02 — Embeddings · types</div>
+    <h1 class="sm">But here is the catch.<br>One word can mean<br>many things.</h1>
+    <p class="sub tight">Take the word "break". A coffee <span class="em">break</span>, a glass that <span class="em">breaks</span>, and the <span class="em">brake</span> in your car. Same sound, three completely different meanings. That problem is why embeddings come in different flavours.</p>
+    <div class="tlist" style="margin-top:24px;gap:18px;">
+      <div class="titem b"><div class="nm">Static <span>word2vec, GloVe</span></div><div class="ds">One fixed vector per word. "break" is always the same, no matter the sentence.</div></div>
+      <div class="titem"><div class="nm">Contextual <span>inside the LLM</span></div><div class="ds">The vector shifts with the words around it. A coffee "break" and a glass that "breaks" finally split apart.</div></div>
+      <div class="titem a"><div class="nm">Sentence <span>search, RAG</span></div><div class="ds">A whole passage squeezed into one vector, so you can match by meaning instead of keywords.</div></div>
+    </div>
+  </div>
+  <div class="foot"><span class="handle">@sksudharsanan</span><span class="pg">14 / 26</span></div>
+</div></div>
+
+<!-- 15 ATTENTION -->
+<div class="frame"><div class="slide">
+  <div class="tag"><div class="tick"></div><div class="lbl"><span class="dot"></span>HOW LLMs WORK · 01</div></div>
+  <div class="body top">
+    <div class="kicker">03 — Attention</div>
+    <h1 class="sm">So who decides which<br>"break" we actually<br>mean?</h1>
+    <p class="sub tight">This is where attention comes in. Every word looks at every other word in the prompt and asks, how much do you matter to me right now? The stronger the link, the more it shapes the meaning.</p>
+    <div class="attn">
+      <div class="line">
+        <span class="w cold">let's</span><span class="w hot">take</span><span class="w hot">a</span><span class="w hot">coffee</span><span class="w hot">break</span>
+      </div>
+    </div>
+    <p class="note">"break" leans hard on "coffee", so the shatter and brake meanings never even show up.</p>
+  </div>
+  <div class="foot"><span class="handle">@sksudharsanan</span><span class="pg">15 / 26</span></div>
+</div></div>
+
+<!-- 16 MLP -->
+<div class="frame"><div class="slide">
+  <div class="tag"><div class="tick"></div><div class="lbl"><span class="dot"></span>HOW LLMs WORK · 01</div></div>
+  <div class="body top">
+    <div class="kicker">04 — The MLP</div>
+    <h1 class="sm">Attention gathers the<br>clues. The MLP turns<br>them into an answer.</h1>
+    <p class="sub tight">Attention is the step where each word collects hints from the words around it. But collecting hints is not the same as understanding them.</p>
+    <p class="sub tight">The MLP is the next step that takes all those hints and works out what they actually add up to. It is also where most of the model's plain facts are stored, like knowing Paris belongs with France.</p>
+    <p style="color:var(--green);font-size:30px;font-weight:600;line-height:1.4;margin-top:26px;max-width:880px;">Stack these two steps dozens of times, and that depth is the "deep" in deep learning.</p>
+  </div>
+  <div class="foot"><span class="handle">@sksudharsanan</span><span class="pg">16 / 26</span></div>
+</div></div>
+
+
+<!-- 17 TRAINING INTRO -->
+<div class="frame"><div class="slide">
+  <div class="tag"><div class="tick"></div><div class="lbl"><span class="dot"></span>HOW LLMs WORK · 01</div></div>
+  <div class="body top">
+    <div class="kicker amber">05 — Training</div>
+    <h1 class="sm">But wait. Who taught<br>the model any of this?</h1>
+    <p class="sub tight">Nobody sat down and coded the answers. The model learned everything by reading unimaginable amounts of text and playing one simple game over and over: guess the next word.</p>
+    <p class="sub tight">Show it "The capital of France is ___", let it guess, then tell it how wrong it was. Do that trillions of times and the guessing slowly turns into knowing.</p>
+  </div>
+  <div class="foot"><span class="handle">@sksudharsanan</span><span class="pg">17 / 26</span></div>
+</div></div>
+
+<!-- 18 GRADIENT DESCENT -->
+<div class="frame"><div class="slide">
+  <div class="tag"><div class="tick"></div><div class="lbl"><span class="dot"></span>HOW LLMs WORK · 01</div></div>
+  <div class="body top">
+    <div class="kicker amber">05 — Training · gradient descent</div>
+    <h1 class="sm">It learns the same way<br>you learn from mistakes.</h1>
+    <p class="sub tight">Every wrong guess gets a score called the <span class="em">loss</span>, just a number for how far off it was. A big miss means a big number. The model's only goal is to make that number smaller.</p>
+    <p class="sub tight">So after each guess, it quietly adjusts millions of tiny settings inside it, each one a little dial, turning them just enough to be a bit less wrong next time. Do that again and again and the guesses keep getting better. That slow, steady correction is gradient descent.</p>
+    <div class="gd">
+      <svg viewBox="0 0 820 200" width="820" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20,30 C220,40 300,180 410,182 C520,180 600,40 800,30" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="3"/>
+        <circle cx="95" cy="86" r="11" fill="rgba(70,192,138,0.45)"/>
+        <circle cx="190" cy="138" r="11" fill="rgba(70,192,138,0.6)"/>
+        <circle cx="290" cy="172" r="11" fill="rgba(70,192,138,0.8)"/>
+        <circle cx="410" cy="182" r="13" fill="var(--green)"/>
+        <text x="410" y="135" fill="#9aa0a8" font-family="IBM Plex Mono" font-size="20" text-anchor="middle">lowest loss</text>
+        <text x="30" y="52" fill="#9aa0a8" font-family="IBM Plex Mono" font-size="20">high error</text>
+      </svg>
+    </div>
+  </div>
+  <div class="foot"><span class="handle">@sksudharsanan</span><span class="pg">18 / 26</span></div>
+</div></div>
+
+<!-- 19 DATA SCALE -->
+<div class="frame"><div class="slide">
+  <div class="tag"><div class="tick"></div><div class="lbl"><span class="dot"></span>HOW LLMs WORK · 01</div></div>
+  <div class="body top">
+    <div class="kicker amber">05 — Training · why data wins</div>
+    <h1 class="sm">And this is why the data<br>matters more than the<br>model itself.</h1>
+    <p class="sub tight">You can read the whole transformer design in an afternoon. It is public. What you cannot copy is the data, how clean it is, how diverse it is, and the compute to train on it.</p>
+    <p class="sub tight">Feed it clean, varied text and you get a sharp model. Feed it noise and you get a confused one. Scale only amplifies whatever you put in, mistakes included.</p>
+    <p style="color:var(--green);font-size:30px;font-weight:600;line-height:1.4;margin-top:24px;max-width:880px;">The model is the engine. The data is the fuel, and the fuel decides how far it goes.</p>
+  </div>
+  <div class="foot"><span class="handle">@sksudharsanan</span><span class="pg">19 / 26</span></div>
+</div></div>
+
+<!-- 20 LOGITS -->
+<div class="frame"><div class="slide">
+  <div class="tag"><div class="tick"></div><div class="lbl"><span class="dot"></span>HOW LLMs WORK · 01</div></div>
+  <div class="body top">
+    <div class="kicker">06 — Prediction · logits</div>
+    <h1 class="sm">Now back to our prompt.<br>Time to actually pick<br>the next word.</h1>
+    <p class="sub tight">After all those layers, the model gives every single word in its vocabulary a raw score for how well it fits next. Tens of thousands of scores. These are called <span class="em">logits</span>, and on their own they are messy and hard to compare.</p>
+    <div class="probs">
+      <div class="prow"><span class="pt">Paris</span><span class="pbar raw"><div style="width:88%"></div></span><span class="pp">3.1</span></div>
+      <div class="prow"><span class="pt">located</span><span class="pbar raw"><div style="width:46%"></div></span><span class="pp">1.0</span></div>
+      <div class="prow"><span class="pt">a</span><span class="pbar raw"><div style="width:34%"></div></span><span class="pp">0.2</span></div>
+    </div>
+    <p class="note">Raw scores. Not probabilities yet.</p>
+  </div>
+  <div class="foot"><span class="handle">@sksudharsanan</span><span class="pg">20 / 26</span></div>
+</div></div>
+
+<!-- 21 SOFTMAX -->
+<div class="frame"><div class="slide">
+  <div class="tag"><div class="tick"></div><div class="lbl"><span class="dot"></span>HOW LLMs WORK · 01</div></div>
+  <div class="body top">
+    <div class="kicker">06 — Prediction · softmax</div>
+    <h1 class="sm">Softmax turns those<br>scores into clean odds.</h1>
+    <p class="sub tight">It takes every raw score and squeezes the whole list into proper percentages that add up to 100. Now you can finally read it as, how likely is each word, really.</p>
+    <div class="formula">softmax(z<small>i</small>) = e<small>^z<small>i</small></small> ⁄ Σ e<small>^z<small>j</small></small></div>
+    <div class="probs">
+      <div class="prow"><span class="pt">Paris</span><span class="pbar"><div style="width:72%"></div></span><span class="pp">72%</span></div>
+      <div class="prow"><span class="pt">located</span><span class="pbar"><div style="width:19%"></div></span><span class="pp">19%</span></div>
+      <div class="prow"><span class="pt">a</span><span class="pbar"><div style="width:9%"></div></span><span class="pp">9%</span></div>
+    </div>
+  </div>
+  <div class="foot"><span class="handle">@sksudharsanan</span><span class="pg">21 / 26</span></div>
+</div></div>
+
+<!-- 22 TOP-K -->
+<div class="frame"><div class="slide">
+  <div class="tag"><div class="tick"></div><div class="lbl"><span class="dot"></span>HOW LLMs WORK · 01</div></div>
+  <div class="body top">
+    <div class="kicker">06 — Prediction · sampling</div>
+    <h1 class="sm">But it does not always<br>just grab the top word.</h1>
+    <p class="sub tight">If it did, the model would sound robotic and repeat itself. So <span class="em">top K</span> keeps only the few strongest options and picks from those, leaving a little room for surprise.</p>
+    <div class="probs">
+      <div class="prow"><span class="pt">Paris</span><span class="pbar"><div style="width:72%"></div></span><span class="pp">72%</span></div>
+      <div class="prow"><span class="pt">located</span><span class="pbar"><div style="width:19%"></div></span><span class="pp">19%</span></div>
+      <div class="prow"><span class="pt">a</span><span class="pbar"><div style="width:9%"></div></span><span class="pp">9%</span></div>
+      <div class="cut">keep top 3 · drop everything below</div>
+      <div class="prow dim"><span class="pt">banana</span><span class="pbar"><div style="width:2%"></div></span><span class="pp">0.1%</span></div>
+    </div>
+    <p class="note">Top P keeps a share of probability instead of a fixed count. Temperature sets the mood: low is safe, high is wild.</p>
+  </div>
+  <div class="foot"><span class="handle">@sksudharsanan</span><span class="pg">22 / 26</span></div>
+</div></div>
+
+<!-- 18 GPUs -->
+<div class="frame"><div class="slide">
+  <div class="tag"><div class="tick"></div><div class="lbl"><span class="dot"></span>HOW LLMs WORK · 01</div></div>
+  <div class="body">
+    <div class="kicker amber">Zoom out</div>
+    <h1 class="md">Underneath, it is all<br>matrix multiplication.</h1>
+    <p class="sub">Millions of these operations for every single token. CPUs run them roughly in sequence. GPUs run thousands at once.</p>
+    <p class="note">That parallelism is why AI lives on graphics cards, not on your laptop's CPU.</p>
+  </div>
+  <div class="foot"><span class="handle">@sksudharsanan</span><span class="pg">23 / 26</span></div>
+</div></div>
+
+<!-- 19 ECOSYSTEM -->
+<div class="frame"><div class="slide">
+  <div class="tag"><div class="tick"></div><div class="lbl"><span class="dot"></span>HOW LLMs WORK · 01</div></div>
+  <div class="body">
+    <h1 class="stmt">ChatGPT or Claude<br>is not "the model".</h1>
+    <p class="sub">It is that next word predictor wrapped in memory, tools, search and code. An agent built around the engine you just took apart.</p>
+  </div>
+  <div class="foot"><span class="handle">@sksudharsanan</span><span class="pg">24 / 26</span></div>
+</div></div>
+
+<!-- 20 RECAP -->
+<div class="frame"><div class="slide">
+  <div class="tag"><div class="tick"></div><div class="lbl"><span class="dot"></span>HOW LLMs WORK · 01</div></div>
+  <div class="body top">
+    <h1 class="sm">The whole pipeline,<br>in one breath.</h1>
+    <div class="road" style="margin-top:34px;">
+      <div class="rrow"><span class="n">01</span> Split text into tokens</div>
+      <div class="rrow"><span class="n">02</span> Turn tokens into meaning vectors</div>
+      <div class="rrow"><span class="n">03</span> Let words weigh each other</div>
+      <div class="rrow"><span class="n">04</span> Transform the mix</div>
+      <div class="rrow"><span class="n">05</span> Trained by being wrong, at scale</div>
+      <div class="rrow"><span class="n">06</span> Score, soften, sample the next word</div>
+    </div>
+    <p class="note" style="margin-top:30px;">No magic. Just numbers moving in a pattern.</p>
+  </div>
+  <div class="foot"><span class="handle">@sksudharsanan</span><span class="pg">25 / 26</span></div>
+</div></div>
+
+<!-- 21 CTA -->
+<div class="frame"><div class="slide">
+  <div class="tag"><div class="tick"></div><div class="lbl"><span class="dot"></span>WHAT'S NEXT</div></div>
+  <div class="body top">
+    <p class="sub" style="margin-top:4px;">Next: how image and video models pull the same trick on <span class="em">pixels</span>, and what really sits behind the chat box.</p>
+    <div class="cta">
+      <div class="t">Don't take my word for it. I built a tool. Pick a <span class="emg">real</span> model, type any prompt, and watch the tokens, vectors and live probabilities for yourself. It runs in your browser. No server, no API key.</div>
+      <div class="lnk">▶ https://asgorithm.com/tools/inside-a-llm.html</div>
+    </div>
+    <div class="bigcta">Try it.</div>
+  </div>
+  <div class="foot"><span class="handle">@sksudharsanan</span><span class="pg">26 / 26</span></div>
+</div></div>
+
+</div>
+
+<script>
+(function(){
+  const g=document.getElementById('egrid');
+  for(let i=0;i<60;i++){
+    const v=Math.sin(i*1.7)*Math.cos(i*0.9);
+    const d=document.createElement('div');d.className='cell';
+    const a=0.18+Math.abs(v)*0.7;
+    d.style.background=v<0?'rgba(217,107,74,'+a+')':'rgba(74,150,217,'+a+')';
+    g.appendChild(d);
+  }
+})();
+function fit(){
+  const W=1080,avail=Math.min(window.innerWidth-32,1080),s=avail/W;
+  document.querySelectorAll('.frame').forEach(f=>{f.style.transform='scale('+s+')';f.style.height=(1350*s)+'px';});
+}
+window.addEventListener('resize',fit);fit();
+</script>
+</body>
+</html>

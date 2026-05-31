@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { FileText, Maximize2, Calendar } from "lucide-react"
 import blogsData from "@/data/blogs.json"
 
-const PdfViewer = lazy(() => import("@/components/PdfViewer"))
+const HtmlViewer = lazy(() => import("@/components/HtmlViewer"))
 
 const glowColors = {
   blue: "hover:shadow-[0_0_30px_rgba(166,216,255,0.6)]",
@@ -57,7 +57,7 @@ export default function Blogs() {
           viewport={{ once: true }}
           className="text-sm text-white/60 text-center mb-8"
         >
-          Slow thoughts, half-formed ideas, and the occasional rant — in PDF form.
+          Slow thoughts, half-formed ideas, and the occasional rant.
         </motion.p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[70vh] overflow-y-auto pr-2">
@@ -112,7 +112,7 @@ export default function Blogs() {
                     onClick={() => setOpenBlog(blog)}
                   >
                     <span className="flex items-center justify-center gap-2">
-                      <span>Read PDF</span>
+                      <span>Read</span>
                       <Maximize2 className="w-3 h-3" />
                     </span>
                   </Button>
@@ -125,7 +125,7 @@ export default function Blogs() {
 
       {openBlog && (
         <Suspense fallback={null}>
-          <PdfViewer
+          <HtmlViewer
             isOpen={!!openBlog}
             file={openBlog?.file}
             title={openBlog?.title}

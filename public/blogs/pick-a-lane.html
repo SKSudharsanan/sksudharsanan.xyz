@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LinkedIn Carousel — sksudharsanan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Sora:wght@400;500;600;700&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    /* palette — cool charcoal + electric green terminal accent */
+    --bg:        oklch(0.145 0.007 250);
+    --bg-2:      oklch(0.225 0.016 248);
+    --ink:       oklch(0.965 0.004 248);
+    --muted:     oklch(0.66 0.013 248);
+    --faint:     oklch(0.46 0.013 248);
+    --line:      oklch(0.32 0.014 248);
+    --accent:    oklch(0.865 0.188 138);
+    --accent-dim:oklch(0.70 0.13 140);
+    --on-accent: oklch(0.205 0.05 150);
+
+    --display: "Sora", system-ui, sans-serif;
+    --body: "Sora", system-ui, sans-serif;
+    --mono: "Sora", system-ui, sans-serif;
+
+    --pad: 96px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    background: #07080a;
+    font-family: var(--body);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow: hidden;
+  }
+
+  /* ---------- stage / scaler ---------- */
+  .stage {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--stage, radial-gradient(120% 100% at 50% -10%, #14161a 0%, #07080a 70%));
+  }
+
+  .frame {
+    position: relative;
+    width: 1080px;
+    height: 1350px;
+    transform-origin: center center;
+    flex: none;
+  }
+
+  /* ---------- slide base ---------- */
+  .slide {
+    position: absolute;
+    inset: 0;
+    background: var(--bg);
+    color: var(--ink);
+    padding: var(--pad);
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .38s ease;
+    overflow: hidden;
+  }
+  .slide.active { opacity: 1; visibility: visible; }
+
+  /* subtle dotted grid texture on dark slides */
+  .slide[data-bg="dark"]::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(oklch(0.86 0.188 138 / 0.05) 1.1px, transparent 1.2px);
+    background-size: 38px 38px;
+    pointer-events: none;
+  }
+
+  /* progress bar */
+  .progress {
+    position: absolute;
+    top: 0; left: 0;
+    height: 6px;
+    background: var(--accent);
+    width: 0%;
+    transition: width .4s ease;
+    z-index: 5;
+  }
+  .slide[data-bg="accent"] .progress { background: var(--on-accent); }
+
+  /* ---------- footer (every slide) ---------- */
+  .foot {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 25px;
+    letter-spacing: 0.02em;
+    padding-top: 34px;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+  }
+  .foot .handle { color: var(--ink); }
+  .foot .handle b { color: var(--accent); font-weight: 600; }
+  .slide[data-bg="accent"] .foot { border-color: oklch(0.205 0.05 150 / 0.25); color: var(--on-accent); }
+  .slide[data-bg="accent"] .foot .handle { color: var(--on-accent); }
+  .slide[data-bg="accent"] .foot .handle b { color: var(--on-accent); }
+  .slide[data-bg="accent"] .num { color: oklch(0.205 0.05 150 / 0.7); }
+
+  /* ---------- kicker / chapter label ---------- */
+  .kicker {
+    font-family: var(--mono);
+    font-size: 26px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .kicker::before {
+    content: "";
+    width: 30px; height: 2px;
+    background: var(--accent);
+  }
+
+  .body-area {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: 1;
+  }
+
+  /* highlighted tech tokens */
+  .k { color: var(--accent); font-weight: 500; }
+
+  /* ---------- type scales by slide type ---------- */
+  /* cover + cta: black base with multi-color gradient blurs, full-white text */
+  .slide[data-type="cover"], .slide[data-type="cta"] { background: #000; color: #ffffff; }
+
+  /* multi-color gradient blur backdrop */
+  .glow {
+    position: absolute;
+    inset: -18%;
+    z-index: 0;
+    pointer-events: none;
+    filter: blur(95px);
+    background:
+      radial-gradient(38% 38% at 20% 26%, oklch(0.80 0.18 138 / 0.58), transparent 70%),
+      radial-gradient(42% 42% at 80% 20%, oklch(0.72 0.16 305 / 0.52), transparent 70%),
+      radial-gradient(46% 46% at 72% 82%, oklch(0.74 0.15 222 / 0.52), transparent 70%),
+      radial-gradient(34% 34% at 22% 84%, oklch(0.82 0.16 62 / 0.46), transparent 70%);
+  }
+  .slide[data-bg="glow"] > *:not(.glow) { position: relative; z-index: 1; }
+  .slide[data-bg="glow"] .progress { background: #ffffff; }
+  .slide[data-bg="glow"] .foot { border-color: rgba(255,255,255,0.18); color: rgba(255,255,255,0.7); }
+  .slide[data-bg="glow"] .foot .handle,
+  .slide[data-bg="glow"] .foot .handle b { color: #ffffff; }
+  .slide[data-bg="glow"] .num { color: rgba(255,255,255,0.6); }
+
+  .cover-top {
+    font-family: var(--mono);
+    font-size: 26px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #ffffff;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .cover-top .dot { width: 12px; height: 12px; border-radius: 50%; background: #ffffff; }
+  .cover-quote {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 118px;
+    line-height: 0.98;
+    letter-spacing: -0.025em;
+    margin: auto 0;
+  }
+  .cover-sub {
+    font-family: var(--body);
+    font-size: 38px;
+    line-height: 1.4;
+    max-width: 80%;
+    color: rgba(255,255,255,0.72);
+  }
+
+  /* statement */
+  .statement-lead {
+    font-family: var(--display);
+    font-weight: 500;
+    font-size: 70px;
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+  .statement-lead .k { color: var(--accent); }
+  .bar {
+    width: 64px; height: 6px;
+    background: var(--accent);
+    margin-bottom: 46px;
+  }
+
+  /* story */
+  .story-text {
+    font-family: var(--body);
+    font-weight: 400;
+    font-size: 47px;
+    line-height: 1.42;
+    letter-spacing: -0.005em;
+    text-wrap: pretty;
+    margin-top: 40px;
+  }
+  .story-text.sm { font-size: 41px; line-height: 1.44; }
+
+  /* quiet / grief */
+  .slide[data-type="quiet"] .body-area { justify-content: center; }
+  .quiet-text {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: 60px;
+    line-height: 1.26;
+    letter-spacing: -0.015em;
+    color: var(--ink);
+    text-wrap: balance;
+  }
+  .quiet-mark {
+    font-family: var(--display);
+    font-size: 140px;
+    line-height: 0.6;
+    color: var(--line);
+    margin-bottom: 10px;
+  }
+
+  /* stat */
+  .stat-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 54px;
+    margin: 50px 0 44px;
+  }
+  .stat .num-big {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 150px;
+    line-height: 0.9;
+    letter-spacing: -0.03em;
+    color: var(--accent);
+  }
+  .stat .num-label {
+    font-family: var(--mono);
+    font-size: 30px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 12px;
+  }
+  .stat-cap {
+    font-family: var(--body);
+    font-size: 38px;
+    line-height: 1.4;
+    color: var(--ink);
+    text-wrap: pretty;
+  }
+
+  /* cta */
+  .cta-lead {
+    font-family: var(--body);
+    font-size: 46px;
+    line-height: 1.4;
+    color: rgba(255,255,255,0.72);
+    max-width: 92%;
+    text-wrap: pretty;
+  }
+  .cta-big {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 168px;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    margin-top: auto;
+  }
+  .slide[data-type="cta"] .k { color: #ffffff; text-decoration: underline; text-decoration-thickness: 4px; text-underline-offset: 8px; }
+
+  /* ---------- chrome: nav + counter (outside scaled frame) ---------- */
+  .nav-btn {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: rgba(20,22,26,0.7);
+    backdrop-filter: blur(6px);
+    color: var(--ink);
+    font-size: 22px;
+    cursor: pointer;
+    display: grid; place-items: center;
+    z-index: 50;
+    transition: background .15s, border-color .15s, opacity .15s;
+  }
+  .nav-btn:hover { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+  .nav-btn[disabled] { opacity: 0.25; pointer-events: none; }
+  .nav-btn.prev { left: 28px; }
+  .nav-btn.next { right: 28px; }
+
+  .counter {
+    position: fixed;
+    bottom: 22px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--mono);
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    color: var(--faint);
+    background: rgba(20,22,26,0.6);
+    backdrop-filter: blur(6px);
+    padding: 8px 16px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    z-index: 50;
+    display: flex; gap: 12px; align-items: center;
+  }
+  .counter .dots { display: flex; gap: 6px; }
+  .counter .pip { width: 6px; height: 6px; border-radius: 50%; background: var(--line); transition: background .2s; }
+  .counter .pip.on { background: var(--accent); }
+
+  /* ================= PRINT ================= */
+  @media print {
+    @page { size: 1080px 1350px; margin: 0; }
+    html, body { background: #fff !important; width: 1080px !important; height: auto !important; overflow: visible !important; }
+    .nav-btn, .counter, #tweaks-root { display: none !important; }
+    .stage { position: static !important; display: block !important; background: none !important; inset: auto !important; }
+    .frame { position: static !important; width: 1080px !important; height: auto !important; transform: none !important; }
+    .slide {
+      position: relative !important;
+      inset: auto !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+      width: 1080px !important;
+      height: 1350px !important;
+      transition: none !important;
+      overflow: hidden;
+      break-after: page;
+      page-break-after: always;
+      break-inside: avoid;
+    }
+    .slide:last-child { break-after: auto; page-break-after: avoid; }
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  }
+</style>
+</head>
+<body style="font-size: 22px; font-family: Sora">
+  <div class="stage" id="stage">
+    <div class="frame" id="frame">
+
+      <!-- 1 · COVER -->
+      <section class="slide" data-type="cover" data-bg="glow" data-screen-label="01 Cover">
+        <div class="progress"></div>
+        <div class="glow"></div>
+        <div class="cover-top"><span class="dot"></span>8 years · no lane</div>
+        <h1 class="cover-quote">"Pick a role.<br/>You can't<br/>do it all."</h1>
+        <p class="cover-sub">I've heard that for almost 8 years.</p>
+        <div class="foot">
+          <span class="handle">@<b>sksudharsanan</b></span>
+          <span class="num"></span>
+        </div>
+      </section>
+
+      <!-- 2 · STATEMENT (thesis) -->
+      <section class="slide" data-type="statement" data-bg="dark" data-screen-label="02 Thesis">
+        <div class="progress"></div>
+        <div class="body-area">
+          <div class="bar"></div>
+          <p class="statement-lead">The funny thing is, every real opportunity in my career came from doing something <span class="k">outside my current role.</span></p>
+        </div>
+        <div class="foot">
+          <span class="handle">@<b>sksudharsanan</b></span>
+          <span class="num"></span>
+        </div>
+      </section>
+
+      <!-- 3 · STORY testing -->
+      <section class="slide" data-type="story" data-bg="dark" data-screen-label="03 Testing">
+        <div class="progress"></div>
+        <div class="kicker">01 — where it started</div>
+        <div class="body-area">
+          <p class="story-text" style="font-family: Sora">I started as a <span class="k">testing engineer.</span> In three months I touched manual, automation, performance and security testing. That curiosity is what pushed me into development.</p>
+        </div>
+        <div class="foot">
+          <span class="handle">@<b>sksudharsanan</b></span>
+          <span class="num"></span>
+        </div>
+      </section>
+
+      <!-- 4 · STORY blockchain R&D -->
+      <section class="slide" data-type="story" data-bg="dark" data-screen-label="04 Blockchain R&D">
+        <div class="progress"></div>
+        <div class="kicker">02 — the rabbit hole</div>
+        <div class="body-area">
+          <p class="story-text sm">From there, two years in blockchain R&D across <span class="k">Hyperledger Fabric</span>, <span class="k">R3 Corda</span> and <span class="k">Ethereum.</span> What began as research pulled me into backend with <span class="k">Node.js</span>, frontend with <span class="k">React</span>, <span class="k">Go</span> for chaincodes, <span class="k">Solidity</span> for smart contracts and <span class="k">Web3/Ethers.js</span> for wallets.</p>
+        </div>
+        <div class="foot">
+          <span class="handle">@<b>sksudharsanan</b></span>
+          <span class="num"></span>
+        </div>
+      </section>
+
+      <!-- 5 · STORY chatbots / ML -->
+      <section class="slide" data-type="story" data-bg="dark" data-screen-label="05 Chatbots & ML">
+        <div class="progress"></div>
+        <div class="kicker">03 — for survival</div>
+        <div class="body-area">
+          <p class="story-text">Then, for survival, I moved into <span class="k">chatbots and ML.</span> My Node and Python skills helped me build contextual chatbots for a large hotel group and a retail company. Someone told me to stick to a lane, so I went back to blockchain.</p>
+        </div>
+        <div class="foot">
+          <span class="handle">@<b>sksudharsanan</b></span>
+          <span class="num"></span>
+        </div>
+      </section>
+
+      <!-- 6 · STORY layer 2s -->
+      <section class="slide" data-type="story" data-bg="dark" data-screen-label="06 Layer 2s">
+        <div class="progress"></div>
+        <div class="kicker">04 — layer 2s</div>
+        <div class="body-area">
+          <p class="story-text sm">This time it was <span class="k">Layer 2s.</span> I explored the ecosystem, built an NFT marketplace on top of <span class="k">StarkNet</span> and <span class="k">StarkEx</span>, and went on to assist my team in building both custodial and non-custodial wallets. Then I got fired because of cost-cutting.</p>
+        </div>
+        <div class="foot">
+          <span class="handle">@<b>sksudharsanan</b></span>
+          <span class="num"></span>
+        </div>
+      </section>
+
+      <!-- 7 · STORY rust astra -->
+      <section class="slide" data-type="story" data-bg="dark" data-screen-label="07 Rust at Astra">
+        <div class="progress"></div>
+        <div class="kicker">05 — picking up rust</div>
+        <div class="body-area">
+          <p class="story-text">Then I picked up <span class="k">Rust</span> and became a Rust backend developer at <span class="k">Astra</span>, building a crypto aggregator that connected centralized and decentralized exchanges through a single API, and got fired again.</p>
+        </div>
+        <div class="foot">
+          <span class="handle">@<b>sksudharsanan</b></span>
+          <span class="num"></span>
+        </div>
+      </section>
+
+      <!-- 8 · STATEMENT low point -->
+      <section class="slide" data-type="statement" data-bg="dark" data-screen-label="08 Two fires">
+        <div class="progress"></div>
+        <div class="body-area">
+          <div class="bar"></div>
+          <p class="statement-lead">Two fires in one year, and my confidence <span class="k">went low.</span></p>
+        </div>
+        <div class="foot">
+          <span class="handle">@<b>sksudharsanan</b></span>
+          <span class="num"></span>
+        </div>
+      </section>
+
+      <!-- 9 · STORY own thing -->
+      <section class="slide" data-type="story" data-bg="dark" data-screen-label="09 Own thing">
+        <div class="progress"></div>
+        <div class="kicker">06 — building my own thing</div>
+        <div class="body-area">
+          <p class="story-text sm">But those setbacks pushed me to build my own thing: a <span class="k">gateway router to LLMs</span> running on local household GPUs (RTX), with a token-based payment rail that worked on any EVM chain. We couldn't scale it and the cash ran out, so I went looking for the next lifeline.</p>
+        </div>
+        <div class="foot">
+          <span class="handle">@<b>sksudharsanan</b></span>
+          <span class="num"></span>
+        </div>
+      </section>
+
+      <!-- 10 · STORY hackfs / deai -->
+      <section class="slide" data-type="story" data-bg="dark" data-screen-label="10 HackFS & DeAI">
+        <div class="progress"></div>
+        <div class="kicker">07 — the next lifeline</div>
+        <div class="body-area">
+          <p class="story-text sm">A hackathon MVP at <span class="k">HackFS</span> with a founder I met there. Then a <span class="k">DeAI startup</span> where I was a consultant but worked like a one-person DevRel — mentoring a younger team, building AI agents with <span class="k">Virtuals</span> and <span class="k">Eliza</span>, and running their content, docs and demos.</p>
+        </div>
+        <div class="foot">
+          <span class="handle">@<b>sksudharsanan</b></span>
+          <span class="num"></span>
+        </div>
+      </section>
+
+      <!-- 11 · QUIET grief -->
+      <section class="slide" data-type="quiet" data-bg="dark" data-screen-label="11 The pause">
+        <div class="progress"></div>
+        <div class="body-area">
+          <div class="quiet-mark">—</div>
+          <p class="quiet-text">After that, I took a month off.
+I wasn’t really ready to keep going. My father had passed away after a three-month battle with cancer, and the stress had reached an all-time high.</p>
+        </div>
+        <div class="foot">
+          <span class="handle">@<b>sksudharsanan</b></span>
+          <span class="num"></span>
+        </div>
+      </section>
+
+      <!-- 12 · STAT content journey -->
+      <section class="slide" data-type="stat" data-bg="dark" data-screen-label="12 Traction">
+        <div class="progress"></div>
+        <div class="kicker">08 — a new lane: content</div>
+        <div class="body-area">
+          <div class="stat-grid">
+            <div class="stat">
+              <div class="num-big">1,475</div>
+              <div class="num-label">followers</div>
+            </div>
+            <div class="stat">
+              <div class="num-big">300K</div>
+              <div class="num-label">views on Instagram alone</div>
+            </div>
+          </div>
+          <p class="stat-cap">My content heavily circled around <span class="k">cricket, blockchain and AI</span> — and this is where it's landed so far.</p>
+        </div>
+        <div class="foot">
+          <span class="handle">@<b>sksudharsanan</b></span>
+          <span class="num"></span>
+        </div>
+      </section>
+
+      <!-- 13 · STORY now -->
+      <section class="slide" data-type="story" data-bg="dark" data-screen-label="13 These days">
+        <div class="progress"></div>
+        <div class="kicker">09 — these days</div>
+        <div class="body-area">
+          <p class="story-text">These days I'm building with <span class="k">Rust</span>, <span class="k">LLMs</span>, <span class="k">LangGraph</span>, <span class="k">LlamaIndex</span>, <span class="k">RAG</span> and <span class="k">AI agents</span> — and going deep into how modern AI actually works.</p>
+        </div>
+        <div class="foot">
+          <span class="handle">@<b>sksudharsanan</b></span>
+          <span class="num"></span>
+        </div>
+      </section>
+
+      <!-- 14 · STATEMENT payoff -->
+      <section class="slide" data-type="statement" data-bg="dark" data-screen-label="14 The payoff">
+        <div class="progress"></div>
+        <div class="body-area">
+          <div class="bar"></div>
+          <p class="statement-lead">For years people told me to pick a lane. Maybe specialists move faster. But every meaningful opportunity I've had came from a skill I picked up <span class="k">outside my main role.</span></p>
+        </div>
+        <div class="foot">
+          <span class="handle">@<b>sksudharsanan</b></span>
+          <span class="num"></span>
+        </div>
+      </section>
+
+      <!-- 15 · CTA -->
+      <section class="slide" data-type="cta" data-bg="glow" data-screen-label="15 Stay tuned">
+        <div class="progress"></div>
+        <div class="glow"></div>
+        <div class="cover-top"><span class="dot"></span>what's next</div>
+        <p class="cta-lead">Over the coming weeks I'll be sharing what I'm learning, and why <span class="k">cross-skilled people</span> like me can be your gold mine in the AI age.</p>
+        <h2 class="cta-big">Stay<br/>tuned.</h2>
+        <div class="foot">
+          <span class="handle">@<b>sksudharsanan</b></span>
+          <span class="num"></span>
+        </div>
+      </section>
+
+    </div>
+
+    <button class="nav-btn prev" id="prev" aria-label="Previous">&#8592;</button>
+    <button class="nav-btn next" id="next" aria-label="Next">&#8594;</button>
+    <div class="counter" id="counter"><span id="cnum">01 / 15</span><span class="dots" id="dots"></span></div>
+  </div>
+  <div id="tweaks-root"></div>
+
+
+
+<script>
+  (function () {
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    const frame = document.getElementById('frame');
+    const stage = document.getElementById('stage');
+    const total = slides.length;
+    const KEY = 'sks_carousel_idx';
+    let idx = parseInt(localStorage.getItem(KEY) || '0', 10);
+    if (isNaN(idx) || idx < 0 || idx >= total) idx = 0;
+
+    const pad = (n) => String(n).padStart(2, '0');
+
+    // build footer numbers + counter pips
+    slides.forEach((s, i) => {
+      const num = s.querySelector('.num');
+      if (num) num.textContent = pad(i + 1) + ' / ' + pad(total);
+      const prog = s.querySelector('.progress');
+      if (prog) prog.style.width = ((i + 1) / total * 100) + '%';
+    });
+    const dots = document.getElementById('dots');
+    slides.forEach((_, i) => {
+      const p = document.createElement('span');
+      p.className = 'pip';
+      dots.appendChild(p);
+    });
+    const pips = Array.from(dots.children);
+    const cnum = document.getElementById('cnum');
+    const prevBtn = document.getElementById('prev');
+    const nextBtn = document.getElementById('next');
+
+    function scale() {
+      const m = 0.92;
+      const s = Math.min((window.innerWidth * m) / 1080, (window.innerHeight * m) / 1350);
+      frame.style.transform = 'scale(' + s + ')';
+    }
+
+    function render() {
+      slides.forEach((s, i) => s.classList.toggle('active', i === idx));
+      pips.forEach((p, i) => p.classList.toggle('on', i === idx));
+      cnum.textContent = pad(idx + 1) + ' / ' + pad(total);
+      prevBtn.disabled = idx === 0;
+      nextBtn.disabled = idx === total - 1;
+      localStorage.setItem(KEY, idx);
+    }
+
+    function go(n) {
+      idx = Math.max(0, Math.min(total - 1, n));
+      render();
+    }
+
+    prevBtn.addEventListener('click', () => go(idx - 1));
+    nextBtn.addEventListener('click', () => go(idx + 1));
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') go(idx - 1);
+      if (e.key === 'ArrowRight') go(idx + 1);
+    });
+
+    // swipe
+    let sx = null;
+    stage.addEventListener('touchstart', (e) => { sx = e.touches[0].clientX; }, { passive: true });
+    stage.addEventListener('touchend', (e) => {
+      if (sx === null) return;
+      const dx = e.changedTouches[0].clientX - sx;
+      if (Math.abs(dx) > 50) go(idx + (dx < 0 ? 1 : -1));
+      sx = null;
+    });
+
+    window.addEventListener('resize', scale);
+    scale();
+    render();
+
+    // expose for export
+    window.__goTo = go;
+    window.__total = total;
+  })();
+</script>
+<script>
+  window.addEventListener('load', function () {
+    var fire = function () { setTimeout(function () { window.print(); }, 600); };
+    if (document.fonts && document.fonts.ready) { document.fonts.ready.then(fire); } else { fire(); }
+  });
+</script>
+</body>
+</html>
